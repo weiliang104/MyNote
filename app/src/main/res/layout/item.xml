@@ -4,17 +4,18 @@
               android:layout_height="wrap_content"
     android:orientation="vertical">
 <TextView
-    android:id="@+id/tv"
+    android:id="@+id/tv_content"
     android:layout_width="match_parent"
-    android:layout_height="30dp"
-    android:gravity="center"
+    android:layout_height="wrap_content"
+
+    android:textSize="20sp"
+    android:textColor="#000"
     android:text="12344"
     />
-    <!--<TextView-->
-        <!--android:id="@+id/data"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="30dp"-->
-        <!--android:gravity="center"-->
-        <!--android:text="12344"-->
-        <!--/>-->
+    <TextView
+        android:id="@+id/tv_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="12344"
+        />
 </LinearLayout>

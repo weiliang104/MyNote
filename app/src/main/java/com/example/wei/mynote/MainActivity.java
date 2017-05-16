@@ -5,100 +5,114 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
+import android.widget.AbsListView;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.TextView;
+
+import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
-    private Myadapter mMyadapter;
-    private RecyclerView mRecyclerView;
-    private List<note> lists;
+public class MainActivity extends AppCompatActivity {
+
+    private ListView mListView;
+    SimpleAdapter simple_adapter;
+    private List<Map<String, Object>> lists;
     private Button add;
     private NoteOpenHelper mHelper;
-private SQLiteDatabase db;
+    private SQLiteDatabase db;
 
     private SimpleAdapter simpadapter;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient mClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        inidata();
-        mRecyclerView = (RecyclerView) findViewById(R.id.reView);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mRecyclerView.setAdapter(mMyadapter = new Myadapter());
-        add= (Button) findViewById(R.id.add);
-        add.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, Main2Activityb.class));
-            }
-        });
-        mHelper = new NoteOpenHelper(this);
-        db = mHelper.getReadableDatabase();
-        //清除表中的内容
-        RefreshNotelist();
-        Cursor sor=db.query("note", null, null, null, null, null, null);
-    }
-
-    private void RefreshNotelist() {
-
-        int size = lists.size();
-        if (size > 0) {
-            lists.removeAll(lists);
-            simpadapter.notifyDataSetChanged();
-        }
-
-    }
-
-    private void inidata() {
-        note mnote = new note("我是内容", "我是top");
-        lists = new ArrayList<note>();
-        lists.add(mnote);
+        initview();
     }
 
     @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+    protected void onStart() {
+        super.onStart();
+        RefreshNotelist();
+    }
+
+    private void RefreshNotelist() {
+        int size = lists.size();
+        if (size > 0) {
+            lists.removeAll(lists);
+            simple_adapter.notifyDataSetChanged();
+        }
+
+        Cursor cursor = db.query("note", null, null, null, null, null, null);
+
+        startManagingCursor(cursor);
+        while (cursor.moveToNext()) {
+            String name = cursor.getString(cursor.getColumnIndex("content"));
+            String date = cursor.getString(cursor.getColumnIndex("date"));
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("tv_content", name);
+            map.put("tv_date", date);
+            lists.add(map);
+        }
+        simple_adapter = new SimpleAdapter(this, lists, R.layout.item,
+                new String[]{"tv_content", "tv_date"}, new int[]{
+                R.id.tv_content, R.id.tv_date});
+        mListView.setAdapter(simple_adapter);
+    }
+
+//    private List<Map<String, Object>> getData() {
+//        Cursor cursor = db.query("note", null, "content!=\"\"", null, null,
+//                null, null);
+//        while (cursor.moveToNext()) {
+//            String name = cursor.getString(cursor.getColumnIndex("content"));
+//            String date = cursor.getString(cursor.getColumnIndex("date"));
+//            Map<String, Object> map = new HashMap<String, Object>();
+//            map.put("tv_content", name);
+//            map.put("tv_date", date);
+//            lists.add(map);
+//        }
+//        cursor.close();
+//        return lists;
+//    }
+
+    public void onScroll(AbsListView arg0, int arg1, int arg2, int arg3) {
+        // TODO Auto-generated method stub
 
     }
 
-    class Myadapter extends RecyclerView.Adapter<Myadapter.MyViewHolder> {
-
-        @Override
-        public Myadapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            MyViewHolder holder = new MyViewHolder(LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item, parent,
-                            false));
-            return holder;
-        }
-
-        @Override
-        public void onBindViewHolder(Myadapter.MyViewHolder holder, int position) {
-            note n = lists.get(position);
-            holder.tv.setText(n.getContent());
-
-        }
-
-        @Override
-        public int getItemCount() {
-            return lists.size();
-        }
-
-        public class MyViewHolder extends RecyclerView.ViewHolder {
-            TextView tv;
-
-            public MyViewHolder(View itemView) {
-                super(itemView);
-                tv = (TextView) itemView.findViewById(R.id.tv);
+    private void initview() {
+        mListView = (ListView) findViewById(R.id.listview);
+        add = (Button) findViewById(R.id.add);
+        lists = new ArrayList<Map<String, Object>>();
+        mHelper = new NoteOpenHelper(this);
+        db = mHelper.getReadableDatabase();
+        add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, EditActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("info", "");
+                bundle.putInt("enter", 0);
+                intent.putExtras(bundle);
+                startActivityForResult(intent, 1);
             }
-        }
+        });
     }
+
+    private void inidata() {
+
+    }
+
+
 }
